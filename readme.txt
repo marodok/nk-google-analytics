@@ -3,8 +3,8 @@ Contributors: marodok
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CUC2VE9F3LADU
 Tags: GA code, google analytics, analytics, tracking code, display advertising, remarketing analytics, universal analytics, Google Analytics in WordPress, WordPress Google Analytics, EU cookie law, fingerprint
 Requires at least: 3
-Tested up to: 4.2.2
-Stable tag: 1.4.12
+Tested up to: 5.5
+Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,7 @@ NK Google Analytics its simple, just add your Google Analytics ID and click "Sav
 * Can anonymize ip
 * Other values, dimensions and metrics
 * Options per page/post
+* Google Tag Manager support
 
 NK Google Analytics enables Google Analytics on all pages.
 
@@ -124,6 +125,37 @@ It is ~90% accurate. The next version fingerprint2.js will be even better, but i
 4. NK Google Analytics more settings page.
 
 == Changelog ==
+
+= 1.6.2 =
+* Bug Fix with EU Cookie Law vs. Global Site Tag https://wordpress.org/support/topic/eu-cookie-law-vs-global-site-tag-bug/#post-12289740
+
+= 1.6.1 =
+* Minor fix
+
+= 1.6.0 =
+* Updated to Google Tag
+* Tested up Wordpress 5.3.1
+
+= 1.5.0 =
+* PHP compatibility fixes
+* Tested up Wordpress 5.2.3
+
+= 1.4.16 =
+* Minor fixes
+* Tested up Wordpress 4.9.7
+
+= 1.4.15 =
+* Minor fixes
+* Clean some comments in code
+* Tested up Wordpress 4.9.5
+
+= 1.4.14 =
+* Minor fixes
+* Clean some comments in code
+
+= 1.4.13 =
+* Google Tag Manager better support
+* Minor code fixes
 
 = 1.4.12 =
 * Minor code fixes

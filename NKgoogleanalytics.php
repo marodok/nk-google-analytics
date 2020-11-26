@@ -1,12 +1,12 @@
 <?php
 /*
 Plugin Name: NK Google Analytics
-Plugin URI: http://www.marodok.com/nk-google-analytics/
+Plugin URI: https://www.marodok.com/nk-google-analytics/
 Description: Add <a href="http://www.google.com/analytics/">Google Analytics</a> javascript code on all pages.
-Version: 1.4.12
+Version: 1.6.2
 Author: Manfred Rodríguez
-Author URI: http://www.marodok.com
-Text Domain: NKgoogleanalytics
+Author URI: https://www.marodok.com
+Text Domain: nk-google-analytics
 Domain Path: /languages/
 */
 
@@ -54,33 +54,38 @@ function nk_is_login_page()
 /**
  * CSS and JS
  */
-function add_assets()
+function nk_add_assets()
 {
     wp_enqueue_style('style_plugin',plugins_url( 'css/style.css' , __FILE__ ) );
     wp_enqueue_script('script_plugin',plugins_url( 'js/script.js' , __FILE__ ) );
 }
-add_action('admin_init','add_assets');
+add_action('admin_init','nk_add_assets');
 
 
-function add_fingerprintjs()
+function nk_add_fingerprintjs()
 {
     wp_enqueue_script('script_fingerprintjs',plugins_url( 'js/fingerprint.min.js' , __FILE__ ) );
 }
 
-if (get_option('nkweb_fingerprintjs')=="true" && get_option('nkweb_Universal_Analytics')=="true") {
-    add_action('init','add_fingerprintjs');
+$nkweb_analytics_type = get_option('nkweb_analytics_type');
+
+if (get_option('nkweb_fingerprintjs')=="true" && $nkweb_analytics_type == "universal-analytics") {
+    add_action('init','nk_add_fingerprintjs');
 }
 
 /**
  *  Get page or post id
  */
 function nk_get_post_id() {
+  
     $post_id = "false";
 
     if ( is_page() ) {
-	$post_id = get_queried_object_id();
+	   $post_id = get_queried_object_id();
+
     } else if ( is_single() ) {
-	$post_id = get_the_ID();
+	   $post_id = get_the_ID();
+
     }
 
     return $post_id;
@@ -94,49 +99,42 @@ function nk_evaluation()
     $post_id = nk_get_post_id();
 
     if ($post_id != "false") {
+
         $nkweb_code_in_head = get_post_meta( $post_id, 'nkweb_code_in_head', true );
+
         if ( ($nkweb_code_in_head != "false") && ($nkweb_code_in_head != "true") ) {
             $nkweb_code_in_head = get_option('nkweb_code_in_head');
         }
+
     }else{
         $nkweb_code_in_head = get_option('nkweb_code_in_head');
     }
 
     if ($nkweb_code_in_head == "true" ) {
         $location = "wp_head";
+
     } else {
         $location = "wp_footer";
     }
 
     if (is_user_logged_in()) {
 
-        $current_user   = wp_get_current_user();
-        $user_role      = $current_user->roles[0];
+        $current_user = wp_get_current_user();
+        $user_role  = $current_user->roles[0];
+        $ignored_roles = get_option('nkweb_ignore');
 
+        if(is_array($ignored_roles))
+            $total_ignored_roles = count($ignored_roles);
+        else
+            $total_ignored_roles = 0;
 
-        $if = 'if( ';
-        $a  = 1;
-        $ignored_roles          = get_option('nkweb_ignore');
-        $total_ignored_roles    = count(get_option('nkweb_ignore'));
 
         if (is_array($ignored_roles) && $total_ignored_roles > 0) {
 
-            foreach ( $ignored_roles as $role => $ignore) {
+            $role = 'ignore_role_' . $user_role;
 
-                $roletmp = explode('_', $role);
-                $roleName = $roletmp[2];
-
-                if($ignore == 'true')
-                    $if .= '("'.$user_role.'"=="'.$roleName.'")';
-
-                if($a<$total_ignored_roles)
-                    $if .= ' || ';
-
-                ++$a;
-            }
-
-            $if .= ') return; else add_action('.$location.', "NKgoogleanalytics"); ';
-            eval($if);
+            if( empty( $ignored_roles[$role] ) )
+                add_action($location, 'NKgoogleanalytics');
 
         } else {
             add_action($location, 'NKgoogleanalytics');
@@ -157,14 +155,13 @@ function activate_NKgoogleanalytics()
 
     $domain = 'your-domain.com';
 
-    if ($_SERVER['SERVER_NAME']) {
+    if ( isset($_SERVER['SERVER_NAME']) ) {
         $domain = $_SERVER['SERVER_NAME'];
     }
 
     add_option('nkweb_id', 'UA-0000000-0');
     add_option('nkweb_Display_Advertising', 'false');
     add_option('nkweb_track_login_and_register', 'false');
-    add_option('nkweb_Universal_Analytics', 'true');
     add_option('nkweb_Domain', $domain);
     add_option('nkweb_Domain_Auto', 'true');
     add_option('nkweb_fingerprintjs', 'false');
@@ -178,6 +175,21 @@ function activate_NKgoogleanalytics()
     add_option('nkweb_Custom_js', '');
     add_option('nkweb_Custom_Values', '');
 
+
+    if( get_option('nkweb_Universal_Analytics') == 'true' ){
+        
+        add_option('nkweb_analytics_type', 'universal-analytics');
+
+    }elseif ( get_option('nkweb_Universal_Analytics') == 'false' ) {
+        
+        add_option('nkweb_analytics_type', 'classic-analytics');
+
+    }else{
+        
+        add_option('nkweb_analytics_type', 'global-site-tag');
+
+    }
+    
 }
 
 
@@ -193,6 +205,7 @@ function uninstall_NKgoogleanalytics()
   delete_option('nkweb_Display_Advertising');
   delete_option('nkweb_track_login_and_register');
   delete_option('nkweb_Universal_Analytics');
+  delete_option('nkweb_analytics_type');
   delete_option('nkweb_Domain');
   delete_option('nkweb_Domain_Auto');
   delete_option('nkweb_fingerprintjs');
@@ -240,6 +253,7 @@ function admin_init_NKgoogleanalytics()
   register_setting('NKgoogleanalytics', 'nkweb_Display_Advertising');
   register_setting('NKgoogleanalytics', 'nkweb_track_login_and_register');
   register_setting('NKgoogleanalytics', 'nkweb_Universal_Analytics');
+  register_setting('NKgoogleanalytics', 'nkweb_analytics_type');
   register_setting('NKgoogleanalytics', 'nkweb_Domain');
   register_setting('NKgoogleanalytics', 'nkweb_Domain_Auto');
   register_setting('NKgoogleanalytics', 'nkweb_fingerprintjs');
@@ -256,13 +270,13 @@ function admin_init_NKgoogleanalytics()
 
 function admin_menu_NKgoogleanalytics()
 {
-  add_options_page('NK Google Analytics', 'NK Google Analytics', 'manage_options', 'NKgoogleanalytics', 'options_page_NKgoogleanalytics');
+    add_options_page('NK Google Analytics', 'NK Google Analytics', 'manage_options', 'NKgoogleanalytics', 'options_page_NKgoogleanalytics');
 }
 
 
 function options_page_NKgoogleanalytics()
 {
-  include(WP_PLUGIN_DIR.'/nk-google-analytics/admin/options.php');
+    include(WP_PLUGIN_DIR.'/nk-google-analytics/admin/options.php');
 }
 
 /**
@@ -286,12 +300,12 @@ function add_metabox_NKgoogleanalytics()
 
 function render_metabox_NKgoogleanalytics( $post )
 {
-  include(WP_PLUGIN_DIR.'/nk-google-analytics/admin/metabox.php');
+    include(WP_PLUGIN_DIR.'/nk-google-analytics/admin/metabox.php');
 }
 
 function save_metabox_NKgoogleanalytics( $post_id )
 {
-  include(WP_PLUGIN_DIR.'/nk-google-analytics/admin/save_metabox.php');
+    include(WP_PLUGIN_DIR.'/nk-google-analytics/admin/save_metabox.php');
 }
 
 function load_metabox_NKgoogleanalytics()
@@ -311,6 +325,28 @@ function NKgoogleanalytics()
     $nkweb_id = get_option('nkweb_id');
     $Display_Advertising = get_option('nkweb_Display_Advertising');
     $Universal_Analytics = get_option('nkweb_Universal_Analytics');
+
+    /**
+     *
+     * backwards compability
+     *
+     */
+    if( empty(get_option('nkweb_analytics_type')) ){
+        if( get_option('nkweb_Universal_Analytics') == 'true' ){
+            update_option('nkweb_analytics_type','universal-analytics');
+
+        }elseif( get_option('nkweb_Universal_Analytics') == 'false' ){
+            update_option('nkweb_analytics_type','classic-analytics');
+
+        }else{
+            update_option('nkweb_analytics_type','global-site-tag');
+
+        }
+    }  
+
+    $analytics_type = get_option('nkweb_analytics_type');
+    
+
     $Domain = get_option('nkweb_Domain');
     $nkweb_Domain_Auto = get_option('nkweb_Domain_Auto');
     $nkweb_fingerprintjs = get_option('nkweb_fingerprintjs');
@@ -324,29 +360,30 @@ function NKgoogleanalytics()
     $post_id = nk_get_post_id();
 
     if ( $post_id != "false" ) {
-	$nkweb_Use_Custom_post = get_post_meta( $post_id, 'nkweb_Use_Custom', true );
-	$nkweb_Custom_Code_post = get_post_meta( $post_id, 'nkweb_Custom_Code', true );
-	$nkweb_Use_Custom_js_post = get_post_meta( $post_id, 'nkweb_Use_Custom_js', true );
-	$nkweb_Custom_js_post = get_post_meta( $post_id, 'nkweb_Custom_js', true );
-	$nkweb_Use_Custom_Values_post = get_post_meta( $post_id, 'nkweb_Use_Custom_Values', true );
-	$nkweb_Custom_Values_post = get_post_meta( $post_id, 'nkweb_Custom_Values', true );
 
-	if ( (  $nkweb_Use_Custom_post == "true" ) ) {
-		$nkweb_Use_Custom = "$nkweb_Use_Custom_post";
-		$nkweb_Custom_Code = "$nkweb_Custom_Code_post";
-	}
+    	$nkweb_Use_Custom_post = get_post_meta( $post_id, 'nkweb_Use_Custom', true );
+    	$nkweb_Custom_Code_post = get_post_meta( $post_id, 'nkweb_Custom_Code', true );
+    	$nkweb_Use_Custom_js_post = get_post_meta( $post_id, 'nkweb_Use_Custom_js', true );
+    	$nkweb_Custom_js_post = get_post_meta( $post_id, 'nkweb_Custom_js', true );
+    	$nkweb_Use_Custom_Values_post = get_post_meta( $post_id, 'nkweb_Use_Custom_Values', true );
+    	$nkweb_Custom_Values_post = get_post_meta( $post_id, 'nkweb_Custom_Values', true );
 
-	if ( $nkweb_Use_Custom_js_post == "true" ) {
-		$nkweb_Custom_js = "$nkweb_Custom_js_post";
-	} else if ( $nkweb_Use_Custom_js_post == "false" ) {
-		$nkweb_Custom_js = "";
-	}
+    	if ( (  $nkweb_Use_Custom_post == "true" ) ) {
+    		$nkweb_Use_Custom = "$nkweb_Use_Custom_post";
+    		$nkweb_Custom_Code = "$nkweb_Custom_Code_post";
+    	}
 
-	if ( $nkweb_Use_Custom_Values_post == "true" ) {
-		$nkweb_Custom_Values = "$nkweb_Custom_Values_post";
-	} else if ( $nkweb_Use_Custom_Values_post == "false" ) {
-		$nkweb_Custom_Values = "";
-	}
+    	if ( $nkweb_Use_Custom_js_post == "true" ) {
+    		$nkweb_Custom_js = "$nkweb_Custom_js_post";
+    	} else if ( $nkweb_Use_Custom_js_post == "false" ) {
+    		$nkweb_Custom_js = "";
+    	}
+
+    	if ( $nkweb_Use_Custom_Values_post == "true" ) {
+    		$nkweb_Custom_Values = "$nkweb_Custom_Values_post";
+    	} else if ( $nkweb_Use_Custom_Values_post == "false" ) {
+    		$nkweb_Custom_Values = "";
+    	}
 
     }
 
@@ -364,12 +401,70 @@ function NKgoogleanalytics()
             $tk = str_replace('<script type="text/javascript"><script>', '<script>', $tk);
             $tk = str_replace('</script></script>', "</script> \n", $tk);
 
+            // Google Tag Manager support
+            $tk = str_replace('<script type="text/javascript"><!-- Google Tag Manager -->', '<!-- Google Tag Manager -->', $tk);
+            $tk = str_replace('</iframe></noscript>', "</iframe></noscript><script>", $tk);
+            $tk = str_replace('<!-- End Google Tag Manager --></script>', "</script><!-- End Google Tag Manager -->", $tk);
+
         } else {
 
             if ($nkweb_id != '' && $nkweb_id != 'UA-0000000-0') {
 
-                if ($Universal_Analytics=='false') {
 
+                if( $analytics_type == 'global-site-tag' ){
+                    
+                    $tk .= "<!-- Global site tag (gtag.js) - Google Analytics -->";
+                    $tk .= "<script async src=\"https://www.googletagmanager.com/gtag/js?id=" . $nkweb_id. "\"></script>";
+                    $tk .= "<script>";
+                    $tk .= "  window.dataLayer = window.dataLayer || [];";
+                    $tk .= "  function gtag(){dataLayer.push(arguments);}";
+                    $tk .= "  gtag('js', new Date());";
+                    $tk .= "  gtag('config', '" . $nkweb_id. "');";
+                    $tk .= "</script>";
+
+                }elseif( $analytics_type == 'universal-analytics' ){
+
+                    $tk .= "<script type=\"text/javascript\"> \n";
+                    $tk .= "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ \n";
+                    $tk .= "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), \n";
+                    $tk .= "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) \n";
+                    $tk .= "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); \n";
+
+                    $tk .= "ga('create', '" . $nkweb_id. "'";
+
+
+
+                    if ($nkweb_fingerprintjs=="true") {
+                        $tk .= ", { 'storage': 'none', 'clientId': new Fingerprint().get()}";
+                    } else if ($nkweb_Domain_Auto=="true") {
+                        $tk .= ", 'auto'";
+                    } else {
+                        $tk .= ", '" . $Domain . "'";
+                    }
+
+                    $tk .= "); \n";
+
+                    if ($nkweb_anonymizeip=="true") {
+                       $tk .= "ga('set', 'anonymizeIp', true); \n";
+                    }
+
+                    if ($Display_Advertising=="true") {
+                        $tk .= "ga('require', 'displayfeatures'); \n";
+                    }
+
+                    if ( ! empty($nkweb_Custom_js)) {
+                    $tk .= "$nkweb_Custom_js\n";
+                    }
+
+                    if ( ! empty($nkweb_Custom_Values)) {
+                    $tk .= "ga('set', {" . $nkweb_Custom_Values . "}); \n";
+                    }
+
+                    $tk .= "ga('send', 'pageview'); \n";
+                    $tk .= "</script> \n";
+
+                }elseif( $analytics_type == 'classic-analytics' ){
+                        
                     $tk .= "<script type=\"text/javascript\">\n";
                     $tk .= " var _gaq = _gaq || [];\n";
                     $tk .= " _gaq.push( ['_setAccount', '".$nkweb_id . "'],['_trackPageview'] );\n";
@@ -404,46 +499,8 @@ function NKgoogleanalytics()
                     $tk .= "  }\n";
                     $tk .= " };\n";
                     $tk .= "</script> \n";
-
-                } else {
-
-                    $tk .= "<script type=\"text/javascript\"> \n";
-                    $tk .= "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ \n";
-                    $tk .= "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), \n";
-                    $tk .= "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) \n";
-                    $tk .= "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); \n";
-
-                    $tk .= "ga('create', '" . $nkweb_id. "'";
-
-                    if ($nkweb_fingerprintjs=="true") {
-                        $tk .= ", { 'storage': 'none', 'clientId': new Fingerprint().get()}";
-                    } else if ($nkweb_Domain_Auto=="true") {
-                        $tk .= ", 'auto'";
-                    } else {
-                        $tk .= ", '" . $Domain . "'";
-                    }
-
-                    $tk .= "); \n";
-
-                    if ($nkweb_anonymizeip=="true") {
-                       $tk .= "ga('set', 'anonymizeIp', true); \n";
-                    }
-
-                    if ($Display_Advertising=="true") {
-                        $tk .= "ga('require', 'displayfeatures'); \n";
-                    }
-
-		    if ( ! empty($nkweb_Custom_js)) {
-			$tk .= "$nkweb_Custom_js\n";
-		    }
-
-		    if ( ! empty($nkweb_Custom_Values)) {
-			$tk .= "ga('set', {" . $nkweb_Custom_Values . "}); \n";
-		    }
-
-                    $tk .= "ga('send', 'pageview'); \n";
-                    $tk .= "</script> \n";
-
+                }else{
+                    error_log('Google Analytics type was not set.');
                 }
             } else {
                 update_option( 'nkweb_Error', 'There is a problem with your Google Analytics ID' );
@@ -452,50 +509,6 @@ function NKgoogleanalytics()
         echo $tk;
     }
 }
-
-
-/*
-    Load textdomain
-*/
-/* Not working for now
-function nk_load_textdomain()
-{
-    global $l10n;
-
-    $domain = 'NKgoogleanalytics';
-
-    if ( get_locale() == $locale ) {
-        $locale = null;
-    }
-
-    if ( empty( $locale ) ) {
-        if ( is_textdomain_loaded( $domain ) ) {
-            return true;
-        } else {
-            return load_plugin_textdomain( $domain, false, $domain . '/languages' );
-        }
-    } else {
-        $mo_orig = $l10n[$domain];
-        unload_textdomain( $domain );
-
-        $mofile = $domain . '-' . $locale . '.mo';
-        $path = WP_PLUGIN_DIR . '/' . $domain . '/languages';
-
-        if ( $loaded = load_textdomain( $domain, $path . '/'. $mofile ) ) {
-            return $loaded;
-        } else {
-            $mofile = WP_LANG_DIR . '/plugins/' . $mofile;
-            return load_textdomain( $domain, $mofile );
-        }
-
-        $l10n[$domain] = $mo_orig;
-    }
-
-    return false;
-    //load_plugin_textdomain( 'NKgoogleanalytics', FALSE, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
-}
-*/
-
 
 /*
     Start process
@@ -517,9 +530,9 @@ if (!is_admin()) {
 }
 
 if(get_option('nkweb_track_login_and_register')=="true"){
-  add_action( 'login_head', 'NKgoogleanalytics');
+    add_action( 'login_head', 'NKgoogleanalytics');
 }
 
 if(nk_is_login_page() && get_option('nkweb_track_login_and_register')=="true"){
-  add_action( 'login_head', 'NKgoogleanalytics');
+    add_action( 'login_head', 'NKgoogleanalytics');
 }

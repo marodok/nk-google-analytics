@@ -2,26 +2,38 @@
 
 defined('ABSPATH') or die("No script kiddies please!");
 
-function field_to_ignore() {
+function nk_field_to_ignore() {
 
  	$options  = get_option('nkweb_ignore');
 
 	$field_value   = isset( $options['ignore_admin_area'] ) ? $options['ignore_admin_area'] : '';
 
-
 	global $wp_roles;
 
+
 	foreach( $wp_roles->roles as $role => $role_info ) {
-		$do_not_track['ignore_role_' . $role] = sprintf( __( 'Ignore %s when logged in', 'wp-google-analytics' ), rtrim( $role_info['name'], 's' ) );
+
+		$name = trim( $role_info['name'] ) . 's';
+		$key = 'ignore_role_' . $role;
+		$value = sprintf( __( 'Ignore %s when logged in', 'NKgoogleanalytics' ), $name );
+		$do_not_track[$key] = $value;
+
 	}
+	
 	foreach( $do_not_track as $id => $label ) {
+
 		$field_value   = isset( $options[$id] ) ? $options[$id] : '';
 		$checked='';
-		if($field_value=="true"){$checked= "checked";}
+		
+		if($field_value=="true"){
+			$checked= "checked";
+		}
+		
 		echo '<label for="nkweb_ignore_' . $id . '">';
 		echo '<input id="nkweb_ignore_' . $id . '" type="checkbox" name="nkweb_ignore[' . $id . ']" value="true" '.$checked.'/>';
 		echo '&nbsp;&nbsp;' . $label;
 		echo '</label><br />';
+
 	}
 }
 
@@ -38,7 +50,7 @@ function field_to_ignore() {
 		$error = "You must to set an Google Analytics ID.";
 	}
 
-	if(get_option('nkweb_Universal_Analytics')== "true"){
+	if(get_option('nkweb_Universal_Analytics')== "true" || get_option('nkweb_analytics_type') == 'universal-analytics'){
 
 		if((get_option('nkweb_Domain')=="your-domain.com" || get_option('nkweb_Domain')=="") && get_option('nkweb_id') != "UA-0000000-0"){
 			$error="When you use Universal Analytics you must set your domain.";
@@ -92,7 +104,7 @@ function field_to_ignore() {
 <div class="nk-main">
 	<div class="nk-main-container">
 
-		<h2>NK Google Analytics settings</h2>
+		<h2><?php _e( 'NK Google Analytics settings', 'NKgoogleanalytics' ); ?></h2>
 
 		<div style="">
 			<form name="myform" class="myform" action="options.php" method="post" enctype="multipart/form-data">
@@ -145,8 +157,9 @@ function field_to_ignore() {
 								<tr valign="top">
 								<th scope="row">Google Analytics Type</th>
 								<td>
-									<input type="radio" name="nkweb_Universal_Analytics" value="true" <?php if (get_option('nkweb_Universal_Analytics') == "true"){ echo "checked "; } ?>> Universal Analytics<br>
-									<input type="radio" name="nkweb_Universal_Analytics" value="false"<?php if (get_option('nkweb_Universal_Analytics') == "false"){ echo "checked "; } ?>> Classic Analytics<br>
+									<input type="radio" name="nkweb_analytics_type" value="universal-analytics" <?php if (get_option('nkweb_analytics_type') == "universal-analytics"){ echo "checked "; } ?>> Universal Analytics<br>
+									<input type="radio" name="nkweb_analytics_type" value="classic-analytics"<?php if (get_option('nkweb_analytics_type') == "classic-analytics"){ echo "checked "; } ?>> Classic Analytics<br>
+									<input type="radio" name="nkweb_analytics_type" value="global-site-tag"<?php if (get_option('nkweb_analytics_type') == "global-site-tag"){ echo "checked "; } ?>> Global Site Tag<br>
 								</td>
 								</tr>
 
@@ -183,7 +196,7 @@ function field_to_ignore() {
 								<th scope="row">Ignore logged users by role</th>
 								<td>
 									<?php
-										echo field_to_ignore();
+										echo nk_field_to_ignore();
 									?>
 								</td>
 								</tr>
@@ -251,6 +264,7 @@ function field_to_ignore() {
 
 		<p><?php _e( 'If do not know how to setup the plugin, just add Google Analytics ID and press "Save Changes", the default settings work in most of the cases.', 'NKgoogleanalytics' );?></p>
 		<p><?php _e( 'Remember, if you do not have an Google Analytics ID, you need to go to <a href="http://www.google.com/analytics">Google Analytics</a>, create an account and get the code (Similar to UA-0000000-0)', 'NKgoogleanalytics' );?></p>
+		<p><?php _e( 'There is some help if you need it <a href="https://support.google.com/analytics/answer/1042508">https://support.google.com/analytics/answer/1042508</a>', 'NKgoogleanalytics' );?></p>
 		<p><?php _e( 'I am very glad that you like this plugin, i will appreciate a lot if you want to make a donation. Thank you.', 'NKgoogleanalytics' );?></p>
 
 		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
@@ -263,7 +277,8 @@ function field_to_ignore() {
 		<a target="_blank" href="http://www.wordpress.org/support/view/plugin-reviews/nk-google-analytics#postform">Thank you for review this plugin, with your help I can improve it</a>
 		<br>
 		<br>
+		<p><strong><?php _e( 'Need a theme? We recommend Padma Unlimited Theme Builder, it\'s free and powerful. <a href="https://www.padmaunlimited.com/">www.padmaunlimited.com</a>', 'NKgoogleanalytics' );?></strong></p>
 		<br>
-		<a target="_blank" href="http://www.marodok.com/link-manager.php?to=sumome">Feel free to test these tools to grow your website traffic for free</a>
+		<a target="_blank" href="https://www.plasma.cr/">Supported by Plasma Soluciones</a>
 	</div>
 </div>
