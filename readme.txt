@@ -1,9 +1,9 @@
 === NK Google Analytics ===
-Contributors: marodok
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CUC2VE9F3LADU
+Contributors: quantumdev
+Donate link: #
 Tags: GA code, google analytics, analytics, tracking code, display advertising, remarketing analytics, universal analytics, Google Analytics in WordPress, WordPress Google Analytics, EU cookie law, fingerprint
 Requires at least: 3
-Tested up to: 5.5
+Tested up to: 5.5.3
 Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -49,7 +49,7 @@ NK Google Analytics enables Google Analytics on all pages.
 Please take the time to rate this plugin, let me and others to know about your experiences by leaving a review, with your help I can improve the plugin for you and other users.
 
 
-If you like the plugin please [Donate here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CUC2VE9F3LADU). 
+Want to collaborate? Find this plugin on GitHub.
 
 
 == Installation ==

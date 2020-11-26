@@ -267,18 +267,11 @@ function nk_field_to_ignore() {
 		<p><?php _e( 'There is some help if you need it <a href="https://support.google.com/analytics/answer/1042508">https://support.google.com/analytics/answer/1042508</a>', 'NKgoogleanalytics' );?></p>
 		<p><?php _e( 'I am very glad that you like this plugin, i will appreciate a lot if you want to make a donation. Thank you.', 'NKgoogleanalytics' );?></p>
 
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-		<input type="hidden" name="cmd" value="_s-xclick">
-		<input type="hidden" name="hosted_button_id" value="CUC2VE9F3LADU">
-		<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-		<img alt="" border="0" src="https://www.paypalobjects.com/es_XC/i/scr/pixel.gif" width="1" height="1">
-		</form>
-
 		<a target="_blank" href="http://www.wordpress.org/support/view/plugin-reviews/nk-google-analytics#postform">Thank you for review this plugin, with your help I can improve it</a>
 		<br>
 		<br>
 		<p><strong><?php _e( 'Need a theme? We recommend Padma Unlimited Theme Builder, it\'s free and powerful. <a href="https://www.padmaunlimited.com/">www.padmaunlimited.com</a>', 'NKgoogleanalytics' );?></strong></p>
 		<br>
-		<a target="_blank" href="https://www.plasma.cr/">Supported by Plasma Soluciones</a>
+		<a target="_blank" href="https://github.com/nomanualdev/nk-google-analytics">Find this plugin on GitHub</a>
 	</div>
 </div>

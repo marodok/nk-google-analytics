@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: NK Google Analytics
-Plugin URI: https://www.marodok.com/nk-google-analytics/
+Plugin URI: #
 Description: Add <a href="http://www.google.com/analytics/">Google Analytics</a> javascript code on all pages.
 Version: 1.6.2
 Author: Manfred Rodríguez
-Author URI: https://www.marodok.com
+Author URI: #
 Text Domain: nk-google-analytics
 Domain Path: /languages/
 */
@@ -31,9 +31,7 @@ if (!defined('WP_PLUGIN_DIR'))
  */
 function nk_custom_links($links)
 {
-    $donate_link = '<a target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CUC2VE9F3LADU">Donate</a>';
     $settings_link = '<a href="options-general.php?page=NKgoogleanalytics">Settings</a>';
-    array_unshift($links, $donate_link);
     array_unshift($links, $settings_link);
     return $links;
 }
